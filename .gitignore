@@ -1,3 +1,16 @@
+*.bak
+compile_commands.json
+.vscode
+.vscode-ctags
+/build_initrd/*
+/build
+/docker
+/build_output
+/rootfs_debian_x86_64
+/rootfs_debian_x86
+/certs/signing_key.x509
+/certs/x509_certificate_list
+/modules-only.symvers
 #
 # NOTE! Don't add files that are generated in specific
 # subdirectories here. Add them in the ".gitignore" file
