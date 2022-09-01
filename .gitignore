@@ -6,6 +6,7 @@ compile_commands.json
 /build
 /docker
 /build_output
+/rootfs_debian_i386
 /rootfs_debian_x86_64
 /rootfs_debian_x86
 /certs/signing_key.x509

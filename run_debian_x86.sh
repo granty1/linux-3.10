@@ -3,18 +3,17 @@
 WORKDIR=$(pwd)
 JOBCOUNT=$(nproc)
 export ARCH=x86
-export INSTALL_PATH=${WORKDIR}/rootfs_debian_x86/boot/
-export INSTALL_MOD_PATH=${WORKDIR}/rootfs_debian_x86/
-export INSTALL_HDR_PATH=${WORKDIR}/rootfs_debian_x86/usr/
+export INSTALL_PATH=${WORKDIR}/rootfs_debian_i386/boot/
+export INSTALL_MOD_PATH=${WORKDIR}/rootfs_debian_i386/
+export INSTALL_HDR_PATH=${WORKDIR}/rootfs_debian_i386/usr/
 
-KERNEL_BUILD=${WORKDIR}/rootfs_debian_x86/usr/src/linux/
-ROOTFS_PATH=${WORKDIR}/rootfs_debian_x86
+KERNEL_BUILD=${WORKDIR}/rootfs_debian_i386/usr/src/linux/
+ROOTFS_PATH=${WORKDIR}/rootfs_debian_i386
 OUTPUTDIR=${WORKDIR}/build_output/${ARCH}
-ROOTFS_IMAGE=${OUTPUTDIR}/rootfs_debian_x86.ext3
+ROOTFS_IMAGE=${OUTPUTDIR}/rootfs_debian_i386.ext3
 KERNEL_IMAGE=${OUTPUTDIR}/bzImage
 
-# 不得超过440M左右，445M就会出现initrd too large to handle, disabling initrd
-rootfs_size=440
+rootfs_size=1024
 
 SMP="-smp 4"
 
@@ -93,14 +92,14 @@ prepare_rootfs(){
 	if [ ! -d "${ROOTFS_PATH}" ]
 	then
 		echo "decompressing rootfs..."
-		if [ ! -f rootfs_debian_x86.tar.gz ]
+		if [ ! -f rootfs_debian_i386.tar.gz ]
 		then
-			echo "fatal err! rootfs_debian_x86.tar.gz not found!"
+			echo "fatal err! rootfs_debian_i386.tar.gz not found!"
 			clean && exit 1
 		fi
-		if  ! tar -xf rootfs_debian_x86.tar.gz
+		if  ! tar -xf rootfs_debian_i386.tar.gz
 		then
-			 echo "unpack rootfs_debian_x86.tar.gz failed!"
+			 echo "unpack rootfs_debian_i386.tar.gz failed!"
 			 clean && exit 1
 		fi
 	fi
@@ -111,9 +110,9 @@ prepare_rootfs(){
 	#  root/linux
 	sed -i '1s#.*#root:$6$jFcaO798$gCSHZGAfpuWEAyO00ZlWzy1JLygVteL/e8oSm00nY7/gWTtk.xjb33kVaSLcERWGyByAd3T25Ih.iY9FLM0SJ/:19217:0:99999:7:::#'  "${ROOTFS_PATH}/etc/shadow"
 	echo "set user/passwd root/linux"
-	# hostname = linux2-x86
-	echo "linux2-x86" > "${ROOTFS_PATH}/etc/hostname"
-	echo "set hostname linux2-x86"
+	# hostname = linux3-x86
+	echo "linux3-x86" > "${ROOTFS_PATH}/etc/hostname"
+	echo "set hostname linux3-x86"
 }
 
 
@@ -133,12 +132,12 @@ build_kernel_devel(){
 	cp scripts/gcc-goto.sh "${KERNEL_BUILD}/scripts"
 	cp -a scripts/Makefile.*  "${KERNEL_BUILD}/scripts"
 	#cp arch/x86/kernel/module.lds "${KERNEL_BUILD}/arch/x86/kernel/"
-	if [ ! -d "${WORKDIR}/rootfs_debian_x86/lib/modules/${kernver}" ]
+	if [ ! -d "${WORKDIR}/rootfs_debian_i386/lib/modules/${kernver}" ]
 	then
-		mkdir -p "${WORKDIR}/rootfs_debian_x86/lib/modules/${kernver}"
+		mkdir -p "${WORKDIR}/rootfs_debian_i386/lib/modules/${kernver}"
 	fi
-	rm -f "${WORKDIR}/rootfs_debian_x86/lib/modules/${kernver}/build"
-	ln -svf /usr/src/linux "${WORKDIR}/rootfs_debian_x86/lib/modules/${kernver}/build"
+	rm -f "${WORKDIR}/rootfs_debian_i386/lib/modules/${kernver}/build"
+	ln -svf /usr/src/linux "${WORKDIR}/rootfs_debian_i386/lib/modules/${kernver}/build"
 }
 
 check_root(){
@@ -163,7 +162,7 @@ build_rootfs(){
 	mkdir -p "${OUTPUTDIR}/tmpmount"
 	mount -t ext3 "${ROOTFS_IMAGE}" "${OUTPUTDIR}/tmpmount" -o loop
 	echo "copy data into rootfs..."
-	cp -a rootfs_debian_x86/* "${OUTPUTDIR}/tmpmount/"
+	cp -a rootfs_debian_i386/* "${OUTPUTDIR}/tmpmount/"
 	umount -f "${OUTPUTDIR}/tmpmount"
 	sync
 	rmdir "${OUTPUTDIR}/tmpmount" &> /dev/null || ls "${OUTPUTDIR}/tmpmount"
@@ -189,60 +188,18 @@ run_qemu_debian(){
 		fi
 	fi
 	set -x
-	# ${QEMU_APP} \
-	# 	-cpu qemu86 \
-	# 	-m 4096 \
-	# 	-nographic ${SMP} ${DBG} \
-	# 	-kernel "${KERNEL_IMAGE}" \
-	# 	-append "noinintrd console=ttyS0 crashkernel=256M root=/dev/sda rootfstype=ext3 rw loglevel=8 init=/bin/bash" \
-	# 	-drive if=none,file="${ROOTFS_IMAGE}",id=hd0 \
-	# 	-device virtio-scsi \
-	# 	-netdev user,id=mynet \
-	# 	-device virtio-net-pci,netdev=mynet \
-	# ${QEMU_APP} \
-	# 	-cpu kvm86 \
-	# 	-m 2048 \
-	# 	-nographic ${SMP} ${DBG} \
-	# 	-kernel "${KERNEL_IMAGE}" \
-	# 	-append "console=ttyS0 crashkernel=256M root=/dev/sda rootfstype=ext3 rw loglevel=8 init=/bin/bash " \
-	# 	-drive file="${ROOTFS_IMAGE}",id=root-img,if=none,format=raw,cache=none \
-	# 	-device ide-hd,drive=root-img \
-	# 	-netdev user,id=mynet \
-	# 	-device virtio-net-pci,netdev=mynet
 
 	${QEMU_APP} \
 		-cpu kvm32 \
 		-m 2048 \
 		-nographic ${SMP} ${DBG} \
 		-kernel "${KERNEL_IMAGE}" \
-		-initrd "${ROOTFS_IMAGE}" \
-		-append "root=/dev/ram rw rootfstype=ext3 console=ttyS0 init=/sbin/init " \
-		-netdev user,id=vmnet \
-		-device virtio-net-pci,netdev=vmnet
+		-append "root=/dev/vda rw rootfstype=ext3 console=ttyS0 init=/sbin/init " \
+		-drive if=none,file="${ROOTFS_IMAGE}",id=hd0 \
+	 	-device virtio-blk-pci,drive=hd0 \
+		-netdev user,id=mynet \
+		-device virtio-net-pci,netdev=mynet
 
-	# ${QEMU_APP} \
-	# 	-cpu kvm86 \
-	# 	-m 1024 \
-	# 	-nographic ${SMP} ${DBG} \
-	# 	-kernel "${KERNEL_IMAGE}" \
-	# 	-append "console=ttyS0 crashkernel=256M root=/dev/sda  rootfstype=ext3 rw loglevel=8 init=/bin/bash " \
-	# 	-device virtio-scsi-pci,id=scsi \
-	# 	-drive file="${ROOTFS_IMAGE}",id=root-img,if=none,format=raw,cache=none \
-	# 	-device scsi-hd,drive=root-img \
-	# 	-netdev user,id=mynet \
-	# 	-device virtio-net-pci,netdev=mynet
-
-	# ${QEMU_APP} \
-	# 	-cpu kvm86 \
-	# 	-m 1024 \
-	# 	-nographic ${SMP} ${DBG} \
-	# 	-kernel "${KERNEL_IMAGE}" \
-	# 	-append "console=ttyS0 crashkernel=256M root=/dev/sda  rootfstype=ext3 rw loglevel=8 init=/bin/bash " \
-	# 	-device megasas,id=scsi0 \
-	# 	-device scsi-hd,drive=drive0,bus=scsi0.0,channel=0,scsi-id=0,lun=0 \
-	# 	-drive file="${ROOTFS_IMAGE}",if=none,id=drive0 \
-	# 	-netdev user,id=mynet \
-	# 	-device virtio-net-pci,netdev=mynet
 	ret=$?
 	{ set +x; } 2>/dev/null;
 	if [ "${ret}" != "0" ]
@@ -250,16 +207,6 @@ run_qemu_debian(){
 		echo "Exit with err [${ret}]"
 		exit
 	fi
-	# ${QEMU_APP} -m 1024\
-	# 	-nographic $SMP -kernel arch/x86/boot/bzImage \
-	# 	-append "noinintrd console=ttyS0 crashkernel=256M root=/dev/vda rootfstype=ext3 rw loglevel=8" \
-	# 	-drive if=none,file=rootfs_debian_x86.ext3,id=hd0 \
-	# 	-device virtio-blk-pci,drive=hd0 \
-	# 	-netdev user,id=mynet \
-	# 	-device virtio-net-pci,netdev=mynet \
-	# 	--fsdev local,id=kmod_dev,path=./kmodules,security_model=none \
-	# 	-device virtio-9p-pci,fsdev=kmod_dev,mount_tag=kmod_mount \
-	# 	$DBG
 }
 
 case $1 in
@@ -306,15 +253,15 @@ case $1 in
 	onekey)
 		check_root
 		make_kernel_image
-		if [ -d rootfs_debian_x86 ]
+		if [ -d rootfs_debian_i386 ]
 		then
-			echo "clean rootfs_debian_x86"
-			rm -rf rootfs_debian_x86
+			echo "clean rootfs_debian_i386"
+			rm -rf rootfs_debian_i386
 		fi
-		if [ -f rootfs_debian_x86.ext3 ]
+		if [ -f rootfs_debian_i386.ext3 ]
 		then
-			echo "clean rootfs_debian_x86.ext3"
-			rm -rf rootfs_debian_x86.ext3
+			echo "clean rootfs_debian_i386.ext3"
+			rm -rf rootfs_debian_i386.ext3
 		fi
 		prepare_rootfs
 		build_rootfs

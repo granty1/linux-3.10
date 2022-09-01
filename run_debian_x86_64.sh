@@ -188,61 +188,19 @@ run_qemu_debian(){
 		fi
 	fi
 	set -x
-	# ${QEMU_APP} \
-	# 	-cpu qemu64 \
-	# 	-m 4096 \
-	# 	-nographic ${SMP} ${DBG} \
-	# 	-kernel "${KERNEL_IMAGE}" \
-	# 	-append "noinintrd console=ttyS0 crashkernel=256M root=/dev/sda rootfstype=ext3 rw loglevel=8 init=/bin/bash" \
-	# 	-drive if=none,file="${ROOTFS_IMAGE}",id=hd0 \
-	# 	-device virtio-scsi \
-	# 	-netdev user,id=mynet \
-	# 	-device virtio-net-pci,netdev=mynet \
-	# ${QEMU_APP} \
-	# 	-cpu kvm64 \
-	# 	-m 2048 \
-	# 	-nographic ${SMP} ${DBG} \
-	# 	-kernel "${KERNEL_IMAGE}" \
-	# 	-append "console=ttyS0 crashkernel=256M root=/dev/sda rootfstype=ext3 rw loglevel=8 init=/bin/bash " \
-	# 	-drive file="${ROOTFS_IMAGE}",id=root-img,if=none,format=raw,cache=none \
-	# 	-device ide-hd,drive=root-img \
-	# 	-netdev user,id=mynet \
-	# 	-device virtio-net-pci,netdev=mynet
 
 	${QEMU_APP} \
 		-cpu kvm64 \
 		-m 2048 \
 		-nographic ${SMP} ${DBG} \
 		-kernel "${KERNEL_IMAGE}" \
-		-append "root=/dev/vda rw rootfstype=ext3 console=ttyS0 init=/bin/bash " \
+		-append "root=/dev/vda rw rootfstype=ext3 console=ttyS0 init=/sbin/init " \
 		-drive if=none,file="${ROOTFS_IMAGE}",id=hd0 \
 	 	-device virtio-blk-pci,drive=hd0 \
 		-netdev user,id=mynet \
 		-device virtio-net-pci,netdev=mynet
 
-	# ${QEMU_APP} \
-	# 	-cpu kvm64 \
-	# 	-m 1024 \
-	# 	-nographic ${SMP} ${DBG} \
-	# 	-kernel "${KERNEL_IMAGE}" \
-	# 	-append "console=ttyS0 crashkernel=256M root=/dev/sda  rootfstype=ext3 rw loglevel=8 init=/bin/bash " \
-	# 	-device virtio-scsi-pci,id=scsi \
-	# 	-drive file="${ROOTFS_IMAGE}",id=root-img,if=none,format=raw,cache=none \
-	# 	-device scsi-hd,drive=root-img \
-	# 	-netdev user,id=mynet \
-	# 	-device virtio-net-pci,netdev=mynet
 
-	# ${QEMU_APP} \
-	# 	-cpu kvm64 \
-	# 	-m 1024 \
-	# 	-nographic ${SMP} ${DBG} \
-	# 	-kernel "${KERNEL_IMAGE}" \
-	# 	-append "console=ttyS0 crashkernel=256M root=/dev/sda  rootfstype=ext3 rw loglevel=8 init=/bin/bash " \
-	# 	-device megasas,id=scsi0 \
-	# 	-device scsi-hd,drive=drive0,bus=scsi0.0,channel=0,scsi-id=0,lun=0 \
-	# 	-drive file="${ROOTFS_IMAGE}",if=none,id=drive0 \
-	# 	-netdev user,id=mynet \
-	# 	-device virtio-net-pci,netdev=mynet
 	ret=$?
 	{ set +x; } 2>/dev/null;
 	if [ "${ret}" != "0" ]
@@ -250,16 +208,6 @@ run_qemu_debian(){
 		echo "Exit with err [${ret}]"
 		exit
 	fi
-	# ${QEMU_APP} -m 1024\
-	# 	-nographic $SMP -kernel arch/x86/boot/bzImage \
-	# 	-append "noinintrd console=ttyS0 crashkernel=256M root=/dev/vda rootfstype=ext3 rw loglevel=8" \
-	# 	-drive if=none,file=rootfs_debian_x86_64.ext3,id=hd0 \
-	# 	-device virtio-blk-pci,drive=hd0 \
-	# 	-netdev user,id=mynet \
-	# 	-device virtio-net-pci,netdev=mynet \
-	# 	--fsdev local,id=kmod_dev,path=./kmodules,security_model=none \
-	# 	-device virtio-9p-pci,fsdev=kmod_dev,mount_tag=kmod_mount \
-	# 	$DBG
 }
 
 case $1 in

@@ -57,8 +57,8 @@ fi
 sed -i '1s#.*#root:$y$j9T$quJBgpxet.41ZYrTPIXIt0$ogsvsdrOZrP3OTZ.OVIpaFpOeCu4Bkp3J9RQawpfuJ6:19221:0:99999:7:::#'  "${OUTPUT}/etc/shadow"
 echo " * set root password : linux"
 # 修改主机名
-echo "linux6-i386" > "${OUTPUT}/etc/hostname"
-echo " * set hostname : linux6-i386"
+echo "linux3-i386" > "${OUTPUT}/etc/hostname"
+echo " * set hostname : linux3-i386"
 # 修改bash环境
 cat >> "${OUTPUT}/etc/profile" << EOF
 
