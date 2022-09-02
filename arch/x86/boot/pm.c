@@ -22,12 +22,22 @@
 static void realmode_switch_hook(void)
 {
 	if (boot_params.hdr.realmode_swtch) {
+		// boot_params.hdr 中有 realmode_swtch，
+		// 记录了 hook 函数地址，如果有的话就执行 hook 函数
+		// hook 函数应该也需要执行关中断操作才合理，至少起到类似效果
+		/*
+		  realmode_swtch:
+			A 16-bit real mode far subroutine invoked immediately before
+			entering protected mode.  The default routine disables NMI, so
+			your routine should probably do so, too.
+		*/
 		asm volatile("lcallw *%0"
 			     : : "m" (boot_params.hdr.realmode_swtch)
 			     : "eax", "ebx", "ecx", "edx");
 	} else {
 		asm volatile("cli");
 		outb(0x80, 0x70); /* Disable NMI */
+		// 写数据，慢速设备需要一点时间，delay 等待一下
 		io_delay();
 	}
 }
