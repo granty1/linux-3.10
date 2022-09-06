@@ -76,6 +76,7 @@ static inline u32 inl(u16 port)
 
 static inline void io_delay(void)
 {
+	// 写0x80端口大概需要1 microsecond时间
 	const u16 DELAY_PORT = 0x80;
 	asm volatile("outb %%al,%0" : : "dN" (DELAY_PORT));
 }

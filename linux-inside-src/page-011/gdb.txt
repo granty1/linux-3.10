@@ -1,0 +1,95 @@
+
+warning: Currently logging to gdb.txt.  Turn the logging off and on to make the new setting effective.
+
+warning: Currently logging to gdb.txt.  Turn the logging off and on to make the new setting effective.
++set pagination off
++set step-mode on
++set debug entry-values 1
++set disassembly-flavor intel
++set width unlimited
++set height unlimited
++define tcp
++set history filename ~/.gdb_history
++set history save on
++set history size 100000
++set history remove-duplicates 10
++define multicont
++file boot
+"/data/linux-3.10.git/linux-inside-src/page-011/boot": not in executable format: file format not recognized
++target remote localhost:1234
+Remote debugging using localhost:1234
+warning: Remote gdbserver does not support determining executable automatically.
+RHEL <=6.8 and <=7.2 versions of gdbserver do not support such automatic executable detection.
+The following versions of gdbserver support it:
+- Upstream version of gdbserver (unsupported) 7.10 or later
+- Red Hat Developer Toolset (DTS) version of gdbserver from DTS 4.0 or later (only on x86_64)
+- RHEL-7.3 versions of gdbserver (on any architecture)
+warning: No executable has been specified and target does not support
+determining executable automatically.  Try using the "file" command.
+0x000000000000fff0 in ?? ()
++s
+0x000000000000e05b in ?? ()
++list
+No symbol table is loaded.  Use the "file" command.
++x
+Argument required (starting display address).
++dis
++sis
+Undefined command: "sis".  Try "help".
++s
+0x000000000000e062 in ?? ()
++s
+0x000000000000e066 in ?? ()
++s
+0x000000000000e068 in ?? ()
++c
+Continuing.
+
+Program received signal SIGINT, Interrupt.
+0x0000000000007c0a in ?? ()
++c
+Continuing.
+Remote communication error.  Target disconnected.: Broken pipe.
++c
+The program is not being run.
++c
+The program is not being run.
++c
+The program is not being run.
++disas 
+No function contains program counter for selected frame.
++disas /r
+No function contains program counter for selected frame.
++s
+The program is not being run.
++start
+No symbol table loaded.  Use the "file" command.
++file
+No executable file now.
+No symbol file now.
++c
+The program is not being run.
++run
+Starting program:  
+No executable file specified.
+Use the "file" or "exec-file" command.
++q
+
+warning: Currently logging to gdb.txt.  Turn the logging off and on to make the new setting effective.
+
+warning: Currently logging to gdb.txt.  Turn the logging off and on to make the new setting effective.
++set pagination off
++set step-mode on
++set debug entry-values 1
++set disassembly-flavor intel
++set width unlimited
++set height unlimited
++define tcp
++set history filename ~/.gdb_history
++set history save on
++set history size 100000
++set history remove-duplicates 10
++define multicont
++disas 
+No frame selected.
++q

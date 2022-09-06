@@ -1,0 +1,52 @@
+/*
+
+* voffset.h 是动态生成的，arch/x86/boot/.gitignore包含，不会被版本控制
+* 根据 arch/x86/boot/.voffset.h.cmd ， voffset.h 通过以下流程生成：
+
+cmd_arch/x86/boot/voffset.h := nm vmlinux | sed -n -e 's/^\([0-9a-fA-F]*\) . \(_text\|_end\)$$/\#define VO_ 0x/p' > arch/x86/boot/voffset.h
+
+简而言之就是用 nm 列出 vmlinux 的符号表，找出代码段、bss 段和结束的地址，并将它们包装成宏：
+
+#define VO__end 0xffffffff82128000
+#define VO__text 0xffffffff81000000
+
+而根据 arch/x86/boot/.zoffset.h.cmd ，zoffset.h 通过以下流程生成：
+
+cmd_arch/x86/boot/zoffset.h := nm arch/x86/boot/compressed/vmlinux | sed -n -e 's/^\([0-9a-fA-F]*\) . \(startup_32\|startup_64\|efi_pe_entry\|efi_stub_entry\|input_data\|_end\|z_.*\)$$/\#define ZO_ 0x/p' > arch/x86/boot/zoffset.h
+
+类似于 voffset.h ，用 nm 列出 压缩后的 vmlinux 符号表，找出代码段、startup 等地址，并将它们包装成宏：
+
+#define ZO__end 0x0000000000634000
+#define ZO_input_data 0x000000000000025e
+#define ZO_startup_32 0x0000000000000000
+#define ZO_startup_64 0x0000000000000200
+#define ZO_z_extract_offset 0x0000000000df8000
+#define ZO_z_extract_offset_negative 0xffffffffff208000
+#define ZO_z_input_len 0x000000000061bdaf
+#define ZO_z_output_len 0x0000000001402908
+
+
+这些字段都在header.S中有出现，说明setup.bin不仅仅被bios填充信息，自身也携带了很多内核在保护模式下的地址信息
+
+
+* VO、ZO什么区别，一个是压缩内核，一个是未压缩内核
+ * The compressed kernel image (ZO), has been moved so that its position
+ * is against the end of the buffer used to hold the uncompressed kernel
+ * image (VO) and the execution environment (.bss, .brk), which makes sure
+ * there is room to do the in-place decompression. (See header.S for the
+ * calculations.)
+ *
+ *                             |-----compressed kernel image------|
+ *                             V                                  V
+ * 0                       extract_offset                      +INIT_SIZE
+ * |-----------|---------------|-------------------------|--------|
+ *             |               |                         |        |
+ *           VO__text      startup_32 of ZO          VO__end    ZO__end
+ *             ^                                         ^
+ *             |-------uncompressed kernel image---------|
+ * 从压缩内核前N偏移地址空间开始解压，中间的空余用于覆盖已解压内核，达到内存充分利用目的
+
+*/
+
+#define VO__end 0xffffffff82128000
+#define VO__text 0xffffffff81000000

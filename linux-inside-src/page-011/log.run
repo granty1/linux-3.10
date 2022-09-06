@@ -1,0 +1,15 @@
+WARNING: Image format was not specified for 'boot' and probing guessed raw.
+         Automatically detecting the format is dangerous for raw images, write operations on block 0 will be restricted.
+         Specify the 'raw' format explicitly to remove the restrictions.
+qemu-system-x86_64: Machine type 'pc-i440fx-rhel7.6.0' is deprecated: machine types for previous major releases are deprecated
+
+SeaBIOS (version 1.15.0-2.module+el8.6.0+847+b490afdd)
+
+
+iPXE (http://ipxe.org) 00:03.0 CA00 PCI2.10 PnP PMM+07F8B460+07ECB460 CA00
+                                                                               
+
+
+Booting from Hard Disk...
+!
+

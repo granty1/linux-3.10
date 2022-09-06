@@ -1,4 +1,35 @@
 /*
+
+* header.S 编译成header.o，boot目录下所有.o连接成setup.elf ELF文件，在用objcopy提取二进制组成setup.bin,最终将setup.bin与vmlinux.bin(以及zoffset.h) 压缩成bzImage
+
+cmd_arch/x86/boot/header.o := gcc -Wp,-MD,arch/x86/boot/.header.o.d  -nostdinc -isystem /usr/lib/gcc/x86_64-linux-gnu/4.9/include -I/data/arch/x86/include -Iarch/x86/incl
+ude/generated  -Iinclude -I/data/arch/x86/include/uapi -Iarch/x86/include/generated/uapi -I/data/include/uapi -Iinclude/generated/uapi -include /data/include/linux/kconfi
+g.h -D__KERNEL__   -g -Os -D_SETUP -D__KERNEL__ -DDISABLE_BRANCH_PROFILING -Wall -Wstrict-prototypes -march=i386 -mregparm=3 -include /data/arch/x86/boot/code16gcc.h -fno
+-strict-aliasing -fomit-frame-pointer -fno-pic  -ffreestanding  -fno-toplevel-reorder  -fno-stack-protector   -m32 -D__ASSEMBLY__   -DSVGA_MODE=NORMAL_VGA -Iarch/x86/boot
+   -c -o arch/x86/boot/header.o arch/x86/boot/header.S
+
+
+cmd_arch/x86/boot/setup.elf := ld -m elf_x86_64   -T arch/x86/boot/setup.ld arch/x86/boot/a20.o arch/x86/boot/bioscall.o arch/x86/boot/cmdline.o arch/x86/boot/copy.o arch
+/x86/boot/cpu.o arch/x86/boot/cpucheck.o arch/x86/boot/early_serial_console.o arch/x86/boot/edd.o arch/x86/boot/header.o arch/x86/boot/main.o arch/x86/boot/mca.o arch/x86
+/boot/memory.o arch/x86/boot/pm.o arch/x86/boot/pmjump.o arch/x86/boot/printf.o arch/x86/boot/regs.o arch/x86/boot/string.o arch/x86/boot/tty.o arch/x86/boot/video.o arch
+/x86/boot/video-mode.o arch/x86/boot/version.o arch/x86/boot/video-vga.o arch/x86/boot/video-vesa.o arch/x86/boot/video-bios.o -o arch/x86/boot/setup.elf
+
+cmd_arch/x86/boot/bzImage := arch/x86/boot/tools/build arch/x86/boot/setup.bin arch/x86/boot/vmlinux.bin arch/x86/boot/zoffset.h > arch/x86/boot/bzImage
+
+*  setup.bin 由 arch/x86/boot/setup.elf 去除掉 symbols 和 relocation 信息得到(-O binary 表示将 object 文件转换为 raw binary 文件，会去掉这些信息)
+*  setup.elf 由链接器通过链接脚本 setup.ld 将 SETUP_OBJS 链接得到：
+
+
+
+参考：
+
+1. https://www.binss.me/blog/boot-process-of-linux-decompress-kernel/
+
+
+
+*/
+
+/*
  *	header.S
  *
  *	Copyright (C) 1991, 1992 Linus Torvalds
@@ -259,6 +290,9 @@ section_table:
 	.globl	sentinel
 sentinel:	.byte 0xff, 0xff        /* Used to detect broken loaders */
 
+# hdr，全称叫做“setup_header”
+# 部分内容在形成bzImage时，由arch/x86/boot/tools/build程序赋值
+# 头变量存放着所有初始化期间使用到的数据，在编译setup.bin的时候存放在.header段中
 	.globl	hdr
 hdr:
 setup_sects:	.byte 0			/* Filled in by build.c */
@@ -269,6 +303,7 @@ vid_mode:	.word SVGA_MODE
 root_dev:	.word 0			/* Filled in by build.c */
 boot_flag:	.word 0xAA55
 
+	# 如何保证偏移512？
 	# offset 512, entry point
 
 	.globl	_start

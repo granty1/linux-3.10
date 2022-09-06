@@ -134,6 +134,7 @@ static void init_heap(void)
 	}
 }
 
+// 这一段C代码还是系统处于实模式下所执行的代码
 void main(void)
 {
 	/* First, copy the boot header into the "zeropage" */

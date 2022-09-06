@@ -1,0 +1,30 @@
+/*
+
+* zoffset.h 是动态生成的，arch/x86/boot/.gitignore包含，不会被版本控制
+* bzImage的生成，调用build以及setup.bin、vmlinux和当前头文件，生成压缩内核镜像
+```
+cmd_arch/x86/boot/bzImage := arch/x86/boot/tools/build arch/x86/boot/setup.bin arch/x86/boot/vmlinux.bin arch/x86/boot/zoffset.h > arch/x86/boot/bzImage
+```
+根据 build 工具的源代码 arch/x86/boot/tools/build.c ，它将根据 zoffset.h 提供的偏移量将 setup.bin 和 vmlinux.bin 连在一起，最后再加上计算出来的 CRC 用作校验，生成 bzImage
+
+
+* 根据 arch/x86/boot/compressed/Makefile 的定义：
+
+$(obj)/zoffset.h: $(obj)/compressed/vmlinux FORCE
+    $(call if_changed,zoffset)
+
+$(obj)/compressed/vmlinux: FORCE
+  $(Q)$(MAKE) $(build)=$(obj)/compressed $@
+
+zoffset.h 存放了压缩后内核的各段偏移量
+
+*/
+
+#define ZO__end 0x0000000000634000
+#define ZO_input_data 0x000000000000025e
+#define ZO_startup_32 0x0000000000000000
+#define ZO_startup_64 0x0000000000000200
+#define ZO_z_extract_offset 0x0000000000df8000
+#define ZO_z_extract_offset_negative 0xffffffffff208000
+#define ZO_z_input_len 0x000000000061bdaf
+#define ZO_z_output_len 0x0000000001402908
